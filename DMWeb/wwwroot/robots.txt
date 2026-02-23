@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://darkmatter.consulting/sitemap.xml
