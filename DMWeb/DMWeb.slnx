@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="../Specs/Specs.csproj" Id="f4082b1f-38a9-4327-b832-0ffc09a73830" />
+  <Project Path="DMWeb.csproj" />
+</Solution>
