@@ -1,0 +1,112 @@
+@inject HttpClient Http
+
+<section id="contact" class="section section-dark">
+  <div class="container contact-container">
+    <h2>Get In Touch</h2>
+    <p class="contact-intro">
+      Ready to modernize a legacy system? We'd love to hear about your project.
+    </p>
+
+    @if (statusMessage != null)
+    {
+      <div class="alert @(isSuccess ? "alert-success" : "alert-error")" role="alert">
+        @statusMessage
+      </div>
+    }
+
+    <div class="contact-grid">
+      <div class="contact-form-wrapper">
+        <EditForm Model="model" OnValidSubmit="HandleSubmit">
+          <DataAnnotationsValidator />
+
+          <div class="form-group">
+            <label for="name">Name</label>
+            <InputText id="name" class="form-control" @bind-Value="model.Name" placeholder="Your name" />
+            <ValidationMessage For="() => model.Name" />
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email</label>
+            <InputText id="email" class="form-control" @bind-Value="model.Email" placeholder="your@email.gov" />
+            <ValidationMessage For="() => model.Email" />
+          </div>
+
+          <div class="form-group">
+            <label for="message">Message</label>
+            <InputTextArea id="message" class="form-control" @bind-Value="model.Message" rows="5"
+              placeholder="Tell us about your legacy system or modernization needs..." />
+            <ValidationMessage For="() => model.Message" />
+          </div>
+
+          <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+            @(isSubmitting ? "Sending..." : "Send Message")
+          </button>
+        </EditForm>
+      </div>
+
+      <div class="contact-direct">
+        <h3>Let's Talk</h3>
+        <p class="contact-note">
+          Fill out the form and we'll get back to you within one business day.
+        </p>
+        <p class="contact-note">
+          Based in Eugene, Oregon.<br />
+          Remote-capable. Government-experienced.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+@code {
+    private ContactModel model = new();
+    private string? statusMessage;
+    private bool isSuccess;
+    private bool isSubmitting;
+
+    private async Task HandleSubmit()
+    {
+        isSubmitting = true;
+        statusMessage = null;
+
+        try
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post,
+                "https://formspree.io/f/mdalpbna");
+            request.Headers.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json"));
+            request.Content = JsonContent.Create(new
+            {
+                name = model.Name,
+                email = model.Email,
+                message = model.Message
+            });
+
+            var response = await Http.SendAsync(request);
+            isSuccess = response.IsSuccessStatusCode;
+            statusMessage = isSuccess
+                ? "Thanks! We'll be in touch soon."
+                : "Something went wrong. Please try again or check back shortly.";
+        }
+        catch
+        {
+            isSuccess = false;
+            statusMessage = "Unable to send message. Please try again shortly.";
+        }
+
+        isSubmitting = false;
+    }
+
+    public class ContactModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Name is required")]
+        public string Name { get; set; } = "";
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Email is required")]
+        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Enter a valid email")]
+        public string Email { get; set; } = "";
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Message is required")]
+        public string Message { get; set; } = "";
+    }
+}
